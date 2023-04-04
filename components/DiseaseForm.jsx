@@ -28,7 +28,7 @@ const DiseaseForm = () => {
 
     await axios
       .post(
-        "https://farming-assistant-backend.vercel.app/disease-predict2",
+        "https://farming-assistant-backend.vercel.app/disease-predict",
         data
       )
       .then(function (response) {
