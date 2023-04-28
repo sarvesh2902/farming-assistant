@@ -27,10 +27,7 @@ const DiseaseForm = () => {
     data.append("file", file.selectedFile);
 
     await axios
-      .post(
-        "https://farming-assistant-backend.vercel.app/disease-predict",
-        data
-      )
+      .post(`${process.env.NEXT_PUBLIC_BACKEND_URL}/disease-predict`, data)
       .then(function (response) {
         setIsDisabled(false);
         const formatted = response.data.how_to_use.split("\n");

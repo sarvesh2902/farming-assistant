@@ -26,7 +26,7 @@ export default function News() {
     axios
       .get(`${process.env.NEXT_PUBLIC_BACKEND_URL}/getnews`)
       .then(function (response) {
-        setTotalNews(response.data);
+        setTotalNews(response.data.articles);
         console.log(response.data);
       })
       .catch(function (error) {

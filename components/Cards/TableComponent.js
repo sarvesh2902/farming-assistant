@@ -3,7 +3,7 @@ import PropTypes from "prop-types";
 
 export default function TableComponent({ color, TableData }) {
   console.log(TableData);
-  const tableRow = JSON.parse(TableData[0]).map((item, index) => {
+  const tableRow = JSON.parse(TableData).map((item, index) => {
     return (
       <tr key={index}>
         <td

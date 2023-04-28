@@ -15,10 +15,10 @@ export default function Tables({ TableData }) {
         {" "}
         <div className="text-lg">
           <p className="font-bold">Analysis: </p>
-          <p>{TableData[1]}</p>
+          <p>{TableData.analysis}</p>
         </div>
         <div className="w-full mb-12 px-4 mt-4">
-          <TableComponent color="dark" TableData={TableData} />
+          <TableComponent color="dark" TableData={TableData.forecast} />
         </div>
       </div>
     </>
