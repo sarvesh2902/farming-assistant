@@ -30,7 +30,7 @@ export default function Disease() {
     >
       <div className="flex flex-wrap mt-4 justify-center">
         <div className="w-full mb-12 xl:mb-0 px-4">
-          <PricingComp />
+          <PricingComp user={session.user} />
         </div>
       </div>
     </Admin>

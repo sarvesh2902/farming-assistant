@@ -1,56 +1,105 @@
 import React from "react";
-import { useState } from "react";
-import axios from "axios";
-import ReactLoading from "react-loading";
+import { useRouter } from "next/router";
 
-const PricingComp = () => {
-  const [file, setFile] = useState(null);
-  const [output, setOutput] = useState("");
-  const [imageSrc, setImageSrc] = useState();
-  const [isLoading, setIsLoading] = useState(false);
-  const [isDisabled, setIsDisabled] = useState(false);
+const PricingComp = ({ user }) => {
+  const router = useRouter();
+  const initializeRazorpay = () => {
+    return new Promise((resolve) => {
+      const script = document.createElement("script");
+      script.src = "https://checkout.razorpay.com/v1/checkout.js";
 
-  const handleChange = (event) => {
-    setFile({
-      selectedFile: event.target.files[0],
+      script.onload = () => {
+        resolve(true);
+      };
+      script.onerror = () => {
+        resolve(false);
+      };
+
+      document.body.appendChild(script);
     });
-
-    setImageSrc(URL.createObjectURL(event.target.files[0]));
   };
 
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-    setIsDisabled(true);
-    setIsLoading(true);
-    let data = new FormData();
-    console.log(file);
-    data.append("file", file.selectedFile);
+  const makePayment = async () => {
+    const res = await initializeRazorpay();
 
-    await axios
-      .post(`${process.env.NEXT_PUBLIC_BACKEND_URL}/disease-predict`, data)
-      .then(function (response) {
-        setIsDisabled(false);
-        const formatted = response.data.how_to_use.split("\n");
-        function removeItem(array, item) {
-          return array.filter((i) => i !== item);
-        }
-        const withOutEmpty = removeItem(formatted, "");
-        const newData = response.data;
-        newData.how_to_use = withOutEmpty;
-        console.log(newData);
-        if (newData.title.toLowerCase().includes("healthy")) {
-          newData.isHealthy = true;
-        } else {
-          newData.isHealthy = false;
-        }
-        setOutput(newData);
-        setIsLoading(false);
-      })
-      .catch(function (error) {
-        console.log(error);
-      });
+    if (!res) {
+      alert("Razorpay SDK Failed to load");
+      return;
+    }
+
+    // Make API call to the serverless API
+    const data = await fetch("http://localhost:3000/api/razorpay", {
+      method: "POST",
+    }).then((t) => t.json());
+    console.log(data);
+    var options = {
+      key: "rzp_test_nD1fgw4FForLB5", // Enter the Key ID generated from the Dashboard
+      name: "Manu Arora Pvt Ltd",
+      currency: data.currency,
+      amount: data.amount,
+      order_id: data.id,
+      description: "Thankyou for your test donation",
+      image: "https://manuarora.in/logo.png",
+      handler: function (response) {
+        // Validate payment at server - using webhooks is a better idea.
+        // alert(response.razorpay_payment_id);
+        // alert(response.razorpay_order_id);
+        // alert(response.razorpay_signature);
+        alert("Payment Successful!");
+        localStorage.setItem("sub", "super");
+        router.push("/disease");
+      },
+      prefill: {
+        name: user.name,
+        email: user.email,
+        contact: "9999999999",
+      },
+    };
+
+    const paymentObject = new window.Razorpay(options);
+    paymentObject.open();
   };
 
+  const makePayment2 = async () => {
+    const res = await initializeRazorpay();
+
+    if (!res) {
+      alert("Razorpay SDK Failed to load");
+      return;
+    }
+
+    // Make API call to the serverless API
+    const data = await fetch("http://localhost:3000/api/razorpay2", {
+      method: "POST",
+    }).then((t) => t.json());
+    console.log(data);
+    var options = {
+      key: "rzp_test_nD1fgw4FForLB5", // Enter the Key ID generated from the Dashboard
+      name: "Manu Arora Pvt Ltd",
+      currency: data.currency,
+      amount: data.amount,
+      order_id: data.id,
+      description: "Thankyou for your test donation",
+      image: "https://manuarora.in/logo.png",
+      handler: function (response) {
+        // Validate payment at server - using webhooks is a better idea.
+        // alert(response.razorpay_payment_id);
+        // alert(response.razorpay_order_id);
+        // alert(response.razorpay_signature);
+        alert("Payment Successful!");
+        localStorage.setItem("sub", "pro");
+        router.push("/disease");
+      },
+      prefill: {
+        name: user.name,
+        email: user.email,
+        contact: "9999999999",
+      },
+    };
+
+    const paymentObject = new window.Razorpay(options);
+    paymentObject.open();
+  };
   return (
     <div className="relative flex flex-col min-w-0 break-words bg-white w-full mb-6 shadow-lg rounded">
       <section class="bg-white dark:bg-gray-900">
@@ -253,12 +302,14 @@ const PricingComp = () => {
                   <span>Ads Free</span>
                 </li>
               </ul>
-              <a
-                href="#"
+              <div
+                onClick={() => {
+                  makePayment();
+                }}
                 class="text-white bg-primary-600 hover:bg-primary-700 focus:ring-4 focus:ring-primary-200 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:text-white  dark:focus:ring-primary-900"
               >
                 Get started
-              </a>
+              </div>
             </div>
             {/* <!-- Pricing Card --> */}
             <div class="flex flex-col p-6 mx-auto max-w-lg text-center text-gray-900 bg-white rounded-lg border border-gray-100 shadow dark:border-gray-600 xl:p-8 dark:bg-gray-800 dark:text-white">
@@ -341,12 +392,14 @@ const PricingComp = () => {
                   <span>Ads Free</span>
                 </li>
               </ul>
-              <a
-                href="#"
+              <div
+                onClick={() => {
+                  makePayment2();
+                }}
                 class="text-white bg-primary-600 hover:bg-primary-700 focus:ring-4 focus:ring-primary-200 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:text-white  dark:focus:ring-primary-900"
               >
                 Get started
-              </a>
+              </div>
             </div>
           </div>
         </div>
