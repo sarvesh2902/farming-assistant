@@ -1,37 +1,17 @@
 import React, { useState, useEffect } from "react";
 import { signIn, useSession, getSession } from "next-auth/react";
 import Admin from "layouts/Admin.js";
-import DiseaseForm from "components/DiseaseForm";
-import axios from "axios";
+import PricingComp from "components/PricingComp";
 
 export default function Disease() {
   const { data: session, status } = useSession();
   console.log(session);
   const [loading, setLoading] = useState(true);
-  // console.log(noOfReq);
-  let userData = null;
 
   useEffect(() => {
-    const securePage = async () => {
+    const securePage = () => {
       if (status === "unauthenticated") {
-        await signIn();
-
-        await axios
-          .post("http://localhost:3000/api/user-profile", {
-            email: session.user.email,
-          })
-          .then(function (response) {
-            console.log(response);
-            userData = response.data;
-          })
-          .catch(function (error) {
-            console.log(error);
-          });
-
-        console.log(userData);
-
-        localStorage.setItem("noOfReq", userData.noOfReq);
-        localStorage.setItem("sub", userData.sub);
+        signIn();
       } else {
         setLoading(false);
       }
@@ -44,13 +24,13 @@ export default function Disease() {
   }
   return (
     <Admin
-      title="Disease Detection"
-      headerText="Upload Image to detect crop disease"
+      title="Pricing"
+      headerText="Our Pricing Models"
       image={session.user.image}
     >
       <div className="flex flex-wrap mt-4 justify-center">
         <div className="w-full mb-12 xl:mb-0 px-4">
-          <DiseaseForm email={session.user.email} />
+          <PricingComp />
         </div>
       </div>
     </Admin>

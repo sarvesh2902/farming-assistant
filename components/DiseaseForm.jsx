@@ -2,13 +2,15 @@ import React from "react";
 import { useState } from "react";
 import axios from "axios";
 import ReactLoading from "react-loading";
+import { useRouter } from "next/router";
 
-const DiseaseForm = () => {
+const DiseaseForm = ({ email }) => {
   const [file, setFile] = useState(null);
   const [output, setOutput] = useState("");
   const [imageSrc, setImageSrc] = useState();
   const [isLoading, setIsLoading] = useState(false);
   const [isDisabled, setIsDisabled] = useState(false);
+  const router = useRouter();
 
   const handleChange = (event) => {
     setFile({
@@ -22,33 +24,63 @@ const DiseaseForm = () => {
     event.preventDefault();
     setIsDisabled(true);
     setIsLoading(true);
-    let data = new FormData();
-    console.log(file);
-    data.append("file", file.selectedFile);
+    const noOfReq = parseInt(localStorage.getItem("noOfReq"));
+    console.log(noOfReq);
+    if (
+      localStorage.getItem("sub") == "free" &&
+      localStorage.getItem("noOfReq") >= 100
+    ) {
+      alert("You have reached the maximum number of requests for free plan");
+      router.push("/pricing");
+    } else if (
+      localStorage.getItem("sub") == "super" &&
+      localStorage.getItem("noOfReq") >= 1000
+    ) {
+      alert("You have reached the maximum number of requests for super plan");
+      router.push("/pricing");
+    } else {
+      localStorage.setItem("noOfReq", noOfReq + 1);
+      noOfReq += 1;
+      let data = new FormData();
+      console.log(file);
+      data.append("file", file.selectedFile);
 
-    await axios
-      .post(`${process.env.NEXT_PUBLIC_BACKEND_URL}/disease-predict`, data)
-      .then(function (response) {
-        setIsDisabled(false);
-        const formatted = response.data.how_to_use.split("\n");
-        function removeItem(array, item) {
-          return array.filter((i) => i !== item);
-        }
-        const withOutEmpty = removeItem(formatted, "");
-        const newData = response.data;
-        newData.how_to_use = withOutEmpty;
-        console.log(newData);
-        if (newData.title.toLowerCase().includes("healthy")) {
-          newData.isHealthy = true;
-        } else {
-          newData.isHealthy = false;
-        }
-        setOutput(newData);
-        setIsLoading(false);
-      })
-      .catch(function (error) {
-        console.log(error);
-      });
+      await axios
+        .post(`${process.env.NEXT_PUBLIC_BACKEND_URL}/disease-predict`, data)
+        .then(function (response) {
+          setIsDisabled(false);
+          const formatted = response.data.how_to_use.split("\n");
+          function removeItem(array, item) {
+            return array.filter((i) => i !== item);
+          }
+          const withOutEmpty = removeItem(formatted, "");
+          const newData = response.data;
+          newData.how_to_use = withOutEmpty;
+          console.log(newData);
+          if (newData.title.toLowerCase().includes("healthy")) {
+            newData.isHealthy = true;
+          } else {
+            newData.isHealthy = false;
+          }
+          setOutput(newData);
+          setIsLoading(false);
+        })
+        .catch(function (error) {
+          console.log(error);
+        });
+
+      await axios
+        .post("http://localhost:3000/api/update-user", {
+          noOfReq,
+          email,
+        })
+        .then(function (response) {
+          console.log(response);
+        })
+        .catch(function (error) {
+          console.log(error);
+        });
+    }
   };
 
   return (
